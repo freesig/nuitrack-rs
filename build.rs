@@ -4,31 +4,51 @@ extern crate cc;
 use std::env;
 use std::path::PathBuf;
 
-const NUI_HEADER_PATH: &'static str = "home/tom/devbox/nuitrack/Nuitrack/include/nuitrack/Nuitrack.h";
+const NUI_INCLUDE_PATH: &'static str = "/home/tom/devbox/nuitrack/Nuitrack/include";
+const NUI_MIDDLE_INCLUDE_PATH: &'static str = "/home/tom/devbox/nuitrack/Nuitrack/include/middleware";
 
 fn main() {
-    cc::Build::new()
-        .include(NUI_HEADER_PATH)
-        .include("nui-helpers/helper.hpp")
-        .file("nui-helpers/helper.cpp")
-        .cpp(true)
-        .compile("libnui.a");
-
     let out_dir = PathBuf::from(env::var("OUT_DIR").expect("bad path"));
+    let mut lib_path = out_dir.clone();
+    lib_path.push("libnui.a");
+    if !lib_path.exists() {
+    
+        cc::Build::new()
+            .cpp(true)
+            .flag("-std=c++14")
+            .warnings(false)
+            .include(NUI_INCLUDE_PATH)
+            .include(NUI_MIDDLE_INCLUDE_PATH)
+            .include("nui-helpers")
+            .file("nui-helpers/helper.cpp")
+            .try_compile("libnui.a")
+            .expect("Failed to build helper library");
+    }
+
     println!("cargo:rustc-link-search={}", out_dir.display());
-    println!("cargo:rustc-link-lib=nuitrack");
     println!("cargo:rustc-link-lib=static=nui");
-    let bindings = bindgen::Builder::default()
-        .header(NUI_HEADER_PATH)
-        .clang_arg("-x")
-        .clang_arg("c++")
-        .clang_arg("-std=c++14")
-        .whitelist_type("RustResult")
-        .whitelist_function("nui_init")
-        .generate()
-        .expect("Unable to generate bindings");
-    let out_path = PathBuf::from(env::var("OUT_DIR").expect("bad path"));
-    bindings
-        .write_to_file(out_path.join("nui_bindings.rs"))
-        .expect("Couldn't write bindings!");
+    println!("cargo:rustc-link-search=nuitrack");
+    println!("cargo:rustc-link-search=/home/tom/devbox/nuitrack/Nuitrack/lib/linux64");
+    println!("cargo:rustc-link-lib=dylib=nuitrack");
+    println!("cargo:rustc-link-lib=dylib=stdc++");
+
+    let mut binding_path = out_dir.clone();
+    binding_path.push("nui_bindings.rs");
+    if !binding_path.exists() {
+        let bindings = bindgen::Builder::default()
+            .header("nui-helpers/helper.hpp")
+            .clang_arg("-x")
+            .clang_arg("c++")
+            .clang_arg("-std=c++14")
+            .clang_arg( format!("-I{}", NUI_INCLUDE_PATH) )
+            .clang_arg( format!("-I{}", NUI_MIDDLE_INCLUDE_PATH) )
+            .whitelist_type("RustResult")
+            .whitelist_function("nui_init")
+            .generate()
+            .expect("Unable to generate bindings");
+        let out_path = PathBuf::from(env::var("OUT_DIR").expect("bad path"));
+        bindings
+            .write_to_file(out_path.join("nui_bindings.rs"))
+            .expect("Couldn't write bindings!");
+    }
 }

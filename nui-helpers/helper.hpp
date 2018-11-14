@@ -1,5 +1,5 @@
 #pragma once
-#include "Nuitrack.h"
+#include <nuitrack/Nuitrack.h>
 #include <string>
 
 using std::string;
@@ -11,20 +11,16 @@ struct RustResult {
     enum {Ok, Err} tag;
     union {
         None empty;
-        string error_msg;
+        const char * error_msg;
     } value;
 
     static RustResult make_ok() {
-        RustResult ret;
-        ret.tag = Ok;
-        ret.value.empty = None();
+        RustResult ret = {.tag = Ok, .value = {.empty = None()}};
         return ret;
     }
     
     static RustResult make_err(string msg) {
-        RustResult ret;
-        ret.tag = Err;
-        ret.value.error_msg = msg;;
+        RustResult ret = {.tag = Err, .value = {.error_msg = msg.c_str()}};
         return ret;
     }
 };
