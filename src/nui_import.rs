@@ -4,3 +4,14 @@
 #![allow(dead_code)]
 
 include!(concat!(env!("OUT_DIR"), "/nui_bindings.rs"));
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct RHandTrackerWrapper {
+    pub result: root::RustResult,
+    pub r_hand_tracker: root::RHandTracker,
+}
+
+extern "C" {
+    pub fn create_hand_tracker() -> RHandTrackerWrapper;
+}

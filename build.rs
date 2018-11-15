@@ -5,14 +5,14 @@ use std::env;
 use std::path::PathBuf;
 
 const NUI_INCLUDE_PATH: &'static str = "/home/tom/devbox/nuitrack/Nuitrack/include";
-const NUI_MIDDLE_INCLUDE_PATH: &'static str = "/home/tom/devbox/nuitrack/Nuitrack/include/middleware";
+const NUI_MIDDLE_INCLUDE_PATH: &'static str =
+    "/home/tom/devbox/nuitrack/Nuitrack/include/middleware";
 
 fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").expect("bad path"));
     let mut lib_path = out_dir.clone();
     lib_path.push("libnui.a");
     if !lib_path.exists() {
-    
         cc::Build::new()
             .cpp(true)
             .flag("-std=c++14")
@@ -40,9 +40,12 @@ fn main() {
             .clang_arg("-x")
             .clang_arg("c++")
             .clang_arg("-std=c++14")
-            .clang_arg( format!("-I{}", NUI_INCLUDE_PATH) )
-            .clang_arg( format!("-I{}", NUI_MIDDLE_INCLUDE_PATH) )
+            .clang_arg(format!("-I{}", NUI_INCLUDE_PATH))
+            .clang_arg(format!("-I{}", NUI_MIDDLE_INCLUDE_PATH))
+            .enable_cxx_namespaces()
             .whitelist_type("RustResult")
+            .opaque_type("RHandTracker")
+            .whitelist_type("RHandTracker")
             .whitelist_function("nui_init")
             .generate()
             .expect("Unable to generate bindings");

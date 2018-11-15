@@ -1,20 +1,21 @@
 mod nui_import;
+mod error_conversion;
 
-use self::nui_import as nui;
+use self::nui_import::root as nui;
+use self::error_conversion::NuiResult;
 use std::io;
-use nui::RustResult;
-
 
 pub fn initialize() -> Result<(), io::Error> {
+    unsafe { nui::nui_init().to_result() }
+}
+
+pub fn create_hand_tracker() -> Result<(), io::Error> {
     unsafe {
-        from_c_result(nui::nui_init())
+        nui_import::create_hand_tracker().to_result()
     }
 }
 
-fn from_c_result(result: RustResult) -> Result<(), io::Error> {
-    match result.tag {
-        0 => Ok(()),
-        1 => Err(io::Error::new(io::ErrorKind::Other, "failed to init nui")),
-        _ => Err(io::Error::new(io::ErrorKind::Other, "Unknown Error")),
-    }
+/*
+fn hand_callback(&mut nui::RHandTrackerData) {
 }
+*/
