@@ -15,3 +15,11 @@ pub struct RHandTrackerWrapper {
 extern "C" {
     pub fn create_hand_tracker() -> RHandTrackerWrapper;
 }
+
+extern "C" {
+    pub fn hand_tracker_callback(hand_tracker: [u64; 2], hand_callback: extern "C" fn(root::RHandTrackerDataPtr) -> ()) -> root::RustResult;
+}
+
+extern "C" {
+    pub fn to_raw(ptr: root::RHandTrackerDataPtr) -> root::HandTrackerData;
+}

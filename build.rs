@@ -45,7 +45,10 @@ fn main() {
             .enable_cxx_namespaces()
             .whitelist_type("RustResult")
             .opaque_type("RHandTracker")
+            .opaque_type("RHandTrackerDataPtr")
+            .whitelist_type("RHandTrackerDataPtr")
             .whitelist_type("RHandTracker")
+            .whitelist_type("tdv::nuitrack::HandTrackerData")
             .whitelist_function("nui_init")
             .generate()
             .expect("Unable to generate bindings");

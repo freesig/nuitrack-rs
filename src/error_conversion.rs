@@ -1,4 +1,4 @@
-use super::nui::{self, Value, Nothing, RustResult};
+use super::nui::{Value, Nothing, RustResult};
 use super::nui_import::RHandTrackerWrapper;
 use std::ffi::CStr;
 use std::os::raw::c_char;

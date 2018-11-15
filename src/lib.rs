@@ -15,7 +15,8 @@ pub fn create_hand_tracker() -> Result<(), io::Error> {
     }
 }
 
-/*
-fn hand_callback(&mut nui::RHandTrackerData) {
+fn hand_callback(data: nui::RHandTrackerDataPtr) {
+    unsafe {
+        let raw_data = nui::to_raw(data).to_result().expect("failed to get hand data");
+    }
 }
-*/
