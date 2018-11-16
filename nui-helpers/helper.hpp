@@ -7,6 +7,27 @@
 
 typedef std::shared_ptr<tdv::nuitrack::HandTrackerData> RHandTrackerDataPtr;
 
+struct RHand {
+    float x;
+    float y;
+    bool click;
+    int pressure;
+    float xReal;
+    float yReal;
+    float zReal;
+};
+
+struct RUserHands {
+    int userId;
+    RHand leftHand;
+    RHand rightHand;
+};
+
+struct RHandData {
+    RUserHands * data;
+    size_t n;
+};
+
 struct ErrorMsg {
     std::string msg;
 };
@@ -18,7 +39,7 @@ enum Tag {Ok, Err};
 union Value {
     Nothing empty;
     uint64_t callback_id;
-    void * hand_data;
+    RHandData hand_data;
     char error_msg[200];
 };
 
@@ -37,7 +58,7 @@ struct RustResult {
         return ret;
     }
     
-    static RustResult make_ok(void * hand_data) {
+    static RustResult make_ok(RHandData hand_data) {
         RustResult ret = {.tag = Ok, .value = {.hand_data = hand_data}};
         std::cout << "make ok" << std::endl;
         return ret;
@@ -56,9 +77,14 @@ struct RustResult {
     }
 };
 
+/*
 struct RHandTracker {
     tdv::nuitrack::HandTracker::Ptr ptr = nullptr;
 };
+*/
+
+typedef tdv::nuitrack::HandTracker::Ptr RHandTracker;
+
 
 struct RHandTrackerWrapper {
     RustResult result;

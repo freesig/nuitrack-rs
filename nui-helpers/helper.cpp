@@ -50,9 +50,38 @@ extern "C" RustResult hand_tracker_callback(HandTracker::Ptr hand_tracker, void 
     }
 }
 
+RHand to_rhand(Hand h){
+    auto rh = RHand{
+        .x = h.x,
+        .y = h.y,
+        .click = h.click,
+        .pressure = h.pressure,
+        .xReal = h.xReal,
+        .yReal = h.yReal,
+        .zReal = h.zReal
+    };
+    return rh;
+}
+
 extern "C" RustResult to_raw(RHandTrackerDataPtr ptr){
     try {
-        return RustResult::make_ok(ptr.get());
+        auto hand_data = ptr->getUsersHands();
+        auto n = hand_data.size();
+        std::vector<RUserHands> ruh;
+        for(auto & d : hand_data){
+            auto r = RUserHands{ 
+                .userId = d.userId,
+                .leftHand = to_rhand(*d.leftHand),
+                .rightHand = to_rhand(*d.rightHand)
+            };
+            ruh.push_back(r);
+        }
+        auto data = ruh.data();
+        auto ret = RHandData{
+            .data = data,
+            .n = n,
+        };
+        return RustResult::make_ok(ret);
     } catch (const Exception& e) {
         return RustResult::make_err(e.what());
     } catch(...) {

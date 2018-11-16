@@ -21,5 +21,5 @@ extern "C" {
 }
 
 extern "C" {
-    pub fn to_raw(ptr: root::RHandTrackerDataPtr) -> root::HandTrackerData;
+    pub fn to_raw(ptr: root::RHandTrackerDataPtr) -> root::RustResult;
 }

@@ -48,7 +48,6 @@ fn main() {
             .opaque_type("RHandTrackerDataPtr")
             .whitelist_type("RHandTrackerDataPtr")
             .whitelist_type("RHandTracker")
-            .whitelist_type("tdv::nuitrack::HandTrackerData")
             .whitelist_function("nui_init")
             .generate()
             .expect("Unable to generate bindings");
