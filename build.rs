@@ -36,6 +36,7 @@ fn main() {
     binding_path.push("nui_bindings.rs");
     if !binding_path.exists() {
         let bindings = bindgen::Builder::default()
+            .header("nui-helpers/simple.hpp")
             .header("nui-helpers/helper.hpp")
             .clang_arg("-x")
             .clang_arg("c++")
@@ -44,10 +45,7 @@ fn main() {
             .clang_arg(format!("-I{}", NUI_MIDDLE_INCLUDE_PATH))
             .enable_cxx_namespaces()
             .whitelist_type("RustResult")
-            .opaque_type("RHandTracker")
-            .opaque_type("RHandTrackerDataPtr")
-            .whitelist_type("RHandTrackerDataPtr")
-            .whitelist_type("RHandTracker")
+            .whitelist_type("SkeletonData")
             .whitelist_function("nui_init")
             .generate()
             .expect("Unable to generate bindings");

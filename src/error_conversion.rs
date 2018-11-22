@@ -1,74 +1,54 @@
-use super::nui_import::root::{Value, Nothing, RustResult, RHandTracker, RHandData};
-use super::nui_import::RHandTrackerWrapper;
+use super::nui_import::root::{Value, RustResult};
+use super::nui_import::root::simple::SkeletonData;
+use super::errors::NuiError;
 use std::ffi::CStr;
 use std::os::raw::c_char;
-use std::io;
 
 pub trait NuiResult {
     type Item;
-    fn to_result(self) -> Result<Self::Item, io::Error>;
+    fn to_result(self) -> Result<Self::Item, NuiError>;
 }
 
+const EMPTY_TYPE: i32 = 0;
+const CALL_BACK_TYPE: i32 = 1;
+const SKELETON_DATA_TYPE: i32 = 2;
+
 pub enum CData{
-    HandData(RHandData),
-    HandTracker(RHandTracker),
+    SkeletonData(SkeletonData),
     CallBackId(u64),
+    Empty,
 }
 
 impl NuiResult for RustResult {
-    type Item = Option<CData>;
-    fn to_result(self) -> Result<Self::Item, io::Error>{
+    type Item = CData;
+    fn to_result(self) -> Result<Self::Item, NuiError>{
         unsafe {
             match self {
                 RustResult { 
-                    tag: 0, 
-                    value: Value{ hand_data },
-                } => Ok(Some(CData::HandData(hand_data))),
-                RustResult { 
-                    tag: 0, 
-                    value: Value{ callback_id },
-                } => Ok(Some(CData::CallBackId(callback_id))),
-                RustResult { tag: 0, .. } => Ok(None),
-                RustResult {
-                    tag: 1,
-                    value: Value{ error_msg },
-                } => Err(io::Error::new(
-                        io::ErrorKind::Other,
-                        CStr::from_ptr((& error_msg[0]) as *const c_char).to_string_lossy().into_owned(),
-                        )),
-                _ => unreachable!(),
-            }
-        }
-    }
-}
-
-impl NuiResult for RHandTrackerWrapper {
-    type Item = Option<CData>;
-    fn to_result(self) -> Result<Self::Item, io::Error> {
-        unsafe {
-            match self {
-                RHandTrackerWrapper { 
-                    result: RustResult { tag: 0, ..},
-                    r_hand_tracker
-                } => Ok(Some(CData::HandTracker(r_hand_tracker))),
-                RHandTrackerWrapper { result: RustResult{tag: 0, ..}, .. } => Ok(None),
-                RHandTrackerWrapper{ 
-                    result: RustResult {
-                        tag: 1,
-                        value: Value{ error_msg },
-                    },
+                    tag: EMPTY_TYPE, 
                     ..
-                } => Err(io::Error::new(
-                        io::ErrorKind::Other,
+                } => Ok(CData::Empty),
+                RustResult { 
+                    tag: CALL_BACK_TYPE, 
+                    value: Value{ callback_id },
+                } => Ok(CData::CallBackId(callback_id)),
+                RustResult { 
+                    tag: SKELETON_DATA_TYPE, 
+                    value: Value{ skeleton_data },
+                } => Ok(CData::SkeletonData(skeleton_data)),
+                RustResult {
+                    tag: _,
+                    value: Value{ error_msg },
+                } => Err(NuiError::Failed(
                         CStr::from_ptr((& error_msg[0]) as *const c_char).to_string_lossy().into_owned(),
                         )),
-                _ => unreachable!(),
             }
         }
     }
 }
 
-
+/*
 impl Default for RustResult {
     fn default() -> RustResult { RustResult{ tag: 1, value: Value{ empty: Nothing{ _address: 0} } } }
 }
+*/

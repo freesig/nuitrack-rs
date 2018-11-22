@@ -3,30 +3,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-
-
-typedef std::shared_ptr<tdv::nuitrack::HandTrackerData> RHandTrackerDataPtr;
-
-struct RHand {
-    float x;
-    float y;
-    bool click;
-    int pressure;
-    float xReal;
-    float yReal;
-    float zReal;
-};
-
-struct RUserHands {
-    int userId;
-    RHand leftHand;
-    RHand rightHand;
-};
-
-struct RHandData {
-    RUserHands * data;
-    size_t n;
-};
+#include "simple.hpp"
 
 struct ErrorMsg {
     std::string msg;
@@ -34,12 +11,16 @@ struct ErrorMsg {
 
 struct Nothing {};
 
-enum Tag {Ok, Err};
+// Has to match the const FooType: i32 = n; in Rust land error_conversion
+enum Tag {Err = -1, 
+    Ok = 0, 
+    CallBackIdType = 1, 
+    SkeletonDataType = 2};
 
 union Value {
     Nothing empty;
+    simple::SkeletonData skeleton_data;
     uint64_t callback_id;
-    RHandData hand_data;
     char error_msg[200];
 };
 
@@ -48,19 +29,16 @@ struct RustResult {
     Value value;
     static RustResult make_ok() {
         RustResult ret = {.tag = Ok, .value = {.empty = Nothing()}};
-        std::cout << "make ok" << std::endl;
         return ret;
     }
     
     static RustResult make_ok(uint64_t callback_id) {
         RustResult ret = {.tag = Ok, .value = {.callback_id = callback_id}};
-        std::cout << "make ok" << std::endl;
         return ret;
     }
     
-    static RustResult make_ok(RHandData hand_data) {
-        RustResult ret = {.tag = Ok, .value = {.hand_data = hand_data}};
-        std::cout << "make ok" << std::endl;
+    static RustResult make_ok(simple::SkeletonData skeleton_data) {
+        RustResult ret = {.tag = Ok, .value = {.skeleton_data = skeleton_data}};
         return ret;
     }
     
@@ -77,22 +55,4 @@ struct RustResult {
     }
 };
 
-/*
-struct RHandTracker {
-    tdv::nuitrack::HandTracker::Ptr ptr = nullptr;
-};
-*/
-
-typedef tdv::nuitrack::HandTracker::Ptr RHandTracker;
-
-
-struct RHandTrackerWrapper {
-    RustResult result;
-    RHandTracker r_hand_tracker;
-};
-
-
 extern "C" RustResult nui_init();
-extern "C" RHandTrackerWrapper create_hand_tracker();
-extern "C" RustResult hand_tracker_callback(tdv::nuitrack::HandTracker::Ptr, void (*hand_callback)(RHandTrackerDataPtr));
-extern "C" RustResult to_raw(RHandTrackerDataPtr);

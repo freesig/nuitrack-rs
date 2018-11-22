@@ -8,7 +8,7 @@ fn main(){
     // Data Stream Setup
     nui::skeleton_data(|data| {
         println!("Skeleton {:?}", data);
-    });
+    }).expect("Failed to add callback");
 
     // Running
     nui::run().expect("Failed to run nui");
