@@ -47,6 +47,9 @@ fn main() {
             .whitelist_type("RustResult")
             .whitelist_type("SkeletonData")
             .whitelist_function("nui_init")
+            .whitelist_function("nui_run")
+            .whitelist_function("nui_release")
+            .whitelist_function("register_closure")
             .generate()
             .expect("Unable to generate bindings");
         let out_path = PathBuf::from(env::var("OUT_DIR").expect("bad path"));

@@ -13,9 +13,11 @@ const EMPTY_TYPE: i32 = 0;
 const CALL_BACK_TYPE: i32 = 1;
 const SKELETON_DATA_TYPE: i32 = 2;
 
+pub type CallBackId = u64;
+
 pub enum CData{
     SkeletonData(SkeletonData),
-    CallBackId(u64),
+    CallBackId(CallBackId),
     Empty,
 }
 
@@ -47,8 +49,11 @@ impl NuiResult for RustResult {
     }
 }
 
-/*
-impl Default for RustResult {
-    fn default() -> RustResult { RustResult{ tag: 1, value: Value{ empty: Nothing{ _address: 0} } } }
+impl From<CData> for CallBackId {
+    fn from(data: CData) -> CallBackId {
+        match data {
+            CData::CallBackId(id) => id,
+            _ => panic!("Type conversion failure"),
+        }
+    }
 }
-*/

@@ -1,4 +1,12 @@
 #pragma once
+#include <nuitrack/Nuitrack.h>
 namespace simple {
-    struct SkeletonData {};
+    struct Skeleton{
+        int id;
+        const tdv::nuitrack::Joint * joints;
+    };
+    struct SkeletonData {
+        Skeleton * skeletons; 
+    };
 };
+

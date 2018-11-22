@@ -5,6 +5,13 @@
 #include <iostream>
 #include "simple.hpp"
 
+template<class T>
+struct SmartPtr {
+    std::mutex lock;
+    std::shared_ptr<T> ptr;
+    void create();
+};
+
 struct ErrorMsg {
     std::string msg;
 };
@@ -56,3 +63,6 @@ struct RustResult {
 };
 
 extern "C" RustResult nui_init();
+extern "C" RustResult nui_run();
+extern "C" RustResult nui_release();
+extern "C" RustResult register_closure(void (*cb)(void *, simple::SkeletonData), void *);
