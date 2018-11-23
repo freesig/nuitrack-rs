@@ -48,6 +48,7 @@ fn main() {
             .whitelist_type("SkeletonData")
             .whitelist_function("nui_init")
             .whitelist_function("nui_run")
+            .whitelist_function("nui_update")
             .whitelist_function("nui_release")
             .whitelist_function("register_closure")
             .generate()

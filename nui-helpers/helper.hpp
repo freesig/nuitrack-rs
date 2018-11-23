@@ -40,7 +40,7 @@ struct RustResult {
     }
     
     static RustResult make_ok(uint64_t callback_id) {
-        RustResult ret = {.tag = Ok, .value = {.callback_id = callback_id}};
+        RustResult ret = {.tag = CallBackIdType, .value = {.callback_id = callback_id}};
         return ret;
     }
     
@@ -64,5 +64,6 @@ struct RustResult {
 
 extern "C" RustResult nui_init();
 extern "C" RustResult nui_run();
+extern "C" RustResult nui_update();
 extern "C" RustResult nui_release();
 extern "C" RustResult register_closure(void (*cb)(void *, simple::SkeletonData), void *);

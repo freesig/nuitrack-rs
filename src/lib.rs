@@ -31,6 +31,13 @@ pub fn run() -> Result<(), NuiError> {
         nui::nui_run().to_result().map(|_|())
     }
 }
+
+pub fn update() -> Result<(), NuiError> {
+    unsafe{
+        nui::nui_update().to_result().map(|_|())
+    }
+}
+
 pub fn release() -> Result<(), NuiError> {
     unsafe{
         nui::nui_release().to_result().map(|_|())

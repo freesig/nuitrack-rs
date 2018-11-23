@@ -41,6 +41,21 @@ extern "C" RustResult nui_run(){
     }
 }
 
+extern "C" RustResult nui_update(){
+    try {
+        if (SKELETON_TRACKER.ptr != nullptr) {
+            Nuitrack::waitUpdate(SKELETON_TRACKER.ptr);
+        }
+        return RustResult::make_ok();
+    } catch (LicenseNotAcquiredException& e) {
+        stringstream ss;
+        ss << "LicenseNotAcquired exception: " << e.what() << endl;
+        return RustResult::make_err(ss.str());
+    } catch (const Exception& e) {
+        return RustResult::make_err(e.what());
+    }
+}
+
 extern "C" RustResult nui_release(){
     try {
         Nuitrack::release();
@@ -67,8 +82,8 @@ simple::SkeletonData to_simple(SkeletonData::Ptr sd) {
 extern "C" RustResult register_closure(void (*cb)(void *, simple::SkeletonData), void * user_data) {
     try {
         create_skeleton_tracker();
-
-        const auto wrapper = [&](const auto arg){ 
+        
+        const auto wrapper = [=](const auto arg){ 
             auto sd = to_simple(arg);
             cb(user_data, sd);
         };

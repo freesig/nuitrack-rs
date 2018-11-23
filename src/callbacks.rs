@@ -3,6 +3,7 @@ use std::ffi::c_void;
 use errors::NuiError;
 use error_conversion::{NuiResult, CallBackId};
 
+#[derive(Debug)]
 pub struct CallBack {
     callback_id: CallBackId,
     callback_ptr: *mut c_void,
@@ -23,7 +24,6 @@ pub fn register_callback_closure<F: FnMut(SkeletonData) -> () + Send + 'static>(
             .map(|id| CallBack{callback_id: id.into(), callback_ptr} )
     }
 }
-
 
 extern "C" fn cb_handler(closure: *mut c_void, n: SkeletonData) {
     let wrapper = closure as *mut ClosureWapper;
