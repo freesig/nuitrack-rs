@@ -6,8 +6,8 @@ mod callbacks;
 use errors::NuiError;
 use error_conversion::NuiResult;
 use nui_import::root as nui;
-use nui::simple::SkeletonData;
-use callbacks::CallBack;
+use nui::simple::{SkeletonData, DepthFrame, RGBFrame};
+use callbacks::{CallBackSkeleton, CallBackDepth, CallBackColor};
 
 #[derive(Debug)]
 pub struct Unimplemented;
@@ -19,11 +19,27 @@ pub fn init() -> Result<(), NuiError> {
 }
 
 pub fn skeleton_data<F>(cb: F)
-    -> Result<CallBack, NuiError>
+    -> Result<CallBackSkeleton, NuiError>
     where
     F: FnMut(SkeletonData) -> () + Send + 'static
 {
-    callbacks::register_callback_closure(cb)
+    callbacks::register_callback_closure_skeleton(cb)
+}
+
+pub fn depth_data<F>(cb: F)
+    -> Result<CallBackDepth, NuiError>
+    where
+    F: FnMut(DepthFrame) -> () + Send + 'static
+{
+    callbacks::register_callback_closure_depth(cb)
+}
+
+pub fn color_data<F>(cb: F)
+    -> Result<CallBackColor, NuiError>
+    where
+    F: FnMut(RGBFrame) -> () + Send + 'static
+{
+    callbacks::register_callback_closure_color(cb)
 }
 
 pub fn run() -> Result<(), NuiError> {

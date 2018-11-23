@@ -11,12 +11,10 @@ pub trait NuiResult {
 
 const EMPTY_TYPE: i32 = 0;
 const CALL_BACK_TYPE: i32 = 1;
-const SKELETON_DATA_TYPE: i32 = 2;
 
 pub type CallBackId = u64;
 
 pub enum CData{
-    SkeletonData(SkeletonData),
     CallBackId(CallBackId),
     Empty,
 }
@@ -34,10 +32,6 @@ impl NuiResult for RustResult {
                     tag: CALL_BACK_TYPE, 
                     value: Value{ callback_id },
                 } => Ok(CData::CallBackId(callback_id)),
-                RustResult { 
-                    tag: SKELETON_DATA_TYPE, 
-                    value: Value{ skeleton_data },
-                } => Ok(CData::SkeletonData(skeleton_data)),
                 RustResult {
                     tag: _,
                     value: Value{ error_msg },

@@ -45,12 +45,13 @@ fn main() {
             .clang_arg(format!("-I{}", NUI_MIDDLE_INCLUDE_PATH))
             .enable_cxx_namespaces()
             .whitelist_type("RustResult")
-            .whitelist_type("SkeletonData")
             .whitelist_function("nui_init")
             .whitelist_function("nui_run")
             .whitelist_function("nui_update")
             .whitelist_function("nui_release")
-            .whitelist_function("register_closure")
+            .whitelist_function("register_skeleton_closure")
+            .whitelist_function("register_depth_closure")
+            .whitelist_function("register_color_closure")
             .generate()
             .expect("Unable to generate bindings");
         let out_path = PathBuf::from(env::var("OUT_DIR").expect("bad path"));

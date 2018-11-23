@@ -10,7 +10,17 @@ fn main(){
 
     // Data Stream Setup
     let cb = nui::skeleton_data(|data| {
-        println!("Skeleton {:?}", data);
+        println!("Skeleton: {:?}", data);
+    }).expect("Failed to add callback");
+    
+    // Data Stream Setup
+    let cb2 = nui::depth_data(|data| {
+        println!("DepthFrame: {:?}", data);
+    }).expect("Failed to add callback");
+    
+    // Data Stream Setup
+    let cb3 = nui::color_data(|data| {
+        println!("RGBFrame: {:?}", data);
     }).expect("Failed to add callback");
 
     // Running
