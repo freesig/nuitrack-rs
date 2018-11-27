@@ -91,7 +91,8 @@ simple::SkeletonData to_simple(SkeletonData::Ptr sd) {
         };
         s_skeletons.push_back(s_skeleton);
     }
-    auto ret = simple::SkeletonData{.skeletons = s_skeletons.data()};
+    auto len = s_skeletons.size();
+    auto ret = simple::SkeletonData{.skeletons = s_skeletons.data(), .len = len };
     return ret;
 }
 

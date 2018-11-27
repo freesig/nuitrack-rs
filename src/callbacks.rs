@@ -2,103 +2,94 @@ use super::nui::{self, simple::SkeletonData, simple::DepthFrame, simple::RGBFram
 use std::ffi::c_void;
 use errors::NuiError;
 use error_conversion::{NuiResult, CallBackId};
+use std::marker::PhantomData;
 
-#[derive(Debug)]
-pub struct CallBackSkeleton {
-    callback_id: CallBackId,
-    callback_ptr: *mut c_void,
+pub enum CallBackType {
+    Skeleton,
+    Depth,
+    Color,
 }
 
-#[derive(Debug)]
-pub struct CallBackDepth {
+pub struct CallBack<T> {
     callback_id: CallBackId,
     callback_ptr: *mut c_void,
-}
-
-#[derive(Debug)]
-pub struct CallBackColor {
-    callback_id: CallBackId,
-    callback_ptr: *mut c_void,
+    /// Gives drop the type to use
+    callback_type: CallBackType,
+    _phantom: PhantomData<T>,
 }
 
 struct ClosureWapper<T> {
     cb: Box<FnMut(T)>,
 }
 
-pub fn register_callback_closure_skeleton<F: FnMut(SkeletonData) -> () + Send + 'static>(cb: F) -> Result<CallBackSkeleton, NuiError> {
-    let cbw = Box::new(ClosureWapper{
-        cb: Box::new(cb),
-    }); 
-    unsafe {
-        let callback_ptr = Box::into_raw(cbw) as *mut c_void;
-        nui::register_skeleton_closure(Some(skeleton_cb_handler), callback_ptr)
-            .to_result()
-            .map(|id| CallBackSkeleton{callback_id: id.into(), callback_ptr} )
-    }
-}
-
-extern "C" fn skeleton_cb_handler(closure: *mut c_void, n: SkeletonData) {
-    let wrapper = closure as *mut ClosureWapper<SkeletonData>;
+extern "C" fn cb_handler<T>(closure: *mut c_void, n: T) {
+    let wrapper = closure as *mut ClosureWapper<T>;
     unsafe{
         (*(*wrapper).cb)(n);
     }
 
 }
 
-pub fn register_callback_closure_depth<F: FnMut(DepthFrame) -> () + Send + 'static>(cb: F) -> Result<CallBackDepth, NuiError> {
-    let cbw = Box::new(ClosureWapper{
-        cb: Box::new(cb),
-    }); 
-    unsafe {
-        let callback_ptr = Box::into_raw(cbw) as *mut c_void;
-        nui::register_depth_closure(Some(depth_cb_handler), callback_ptr)
-            .to_result()
-            .map(|id| CallBackDepth{callback_id: id.into(), callback_ptr} )
+// Needed because the FFI needs seperate function addresses to call
+extern "C" fn skeleton_handler(closure: *mut c_void, n: SkeletonData) { cb_handler(closure, n) }
+extern "C" fn depth_handler(closure: *mut c_void, n: DepthFrame) { cb_handler(closure, n) }
+extern "C" fn color_handler(closure: *mut c_void, n: RGBFrame) { cb_handler(closure, n) }
+
+impl<T> ClosureWapper<T> {
+    fn ptr<F: FnMut(T) -> () + Send + 'static>(cb: F) -> *mut c_void {
+        let cbw = Box::new(ClosureWapper{
+            cb: Box::new(cb),
+        });
+        Box::into_raw(cbw) as *mut c_void
     }
 }
 
-extern "C" fn depth_cb_handler(closure: *mut c_void, n: DepthFrame) {
-    let wrapper = closure as *mut ClosureWapper<DepthFrame>;
-    unsafe{
-        (*(*wrapper).cb)(n);
-    }
-
-}
-
-pub fn register_callback_closure_color<F: FnMut(RGBFrame) -> () + Send + 'static>(cb: F) -> Result<CallBackColor, NuiError> {
-    let cbw = Box::new(ClosureWapper{
-        cb: Box::new(cb),
-    }); 
-    unsafe {
-        let callback_ptr = Box::into_raw(cbw) as *mut c_void;
-        nui::register_color_closure(Some(color_cb_handler), callback_ptr)
-            .to_result()
-            .map(|id| CallBackColor{callback_id: id.into(), callback_ptr} )
+impl CallBack<SkeletonData> {
+    pub fn new<F: FnMut(SkeletonData) -> () + Send + 'static>(cb: F) -> Result<Self, NuiError> {
+        let callback_ptr = ClosureWapper::ptr(cb);
+        unsafe {
+            nui::register_skeleton_closure(Some(skeleton_handler), callback_ptr)
+                .to_result()
+                .map(|id| CallBack{callback_id: id.into(), callback_ptr, callback_type: CallBackType::Skeleton, _phantom: PhantomData} )
+        }
     }
 }
 
-extern "C" fn color_cb_handler(closure: *mut c_void, n: RGBFrame) {
-    let wrapper = closure as *mut ClosureWapper<RGBFrame>;
-    unsafe{
-        (*(*wrapper).cb)(n);
+impl CallBack<DepthFrame> {
+    pub fn new<F: FnMut(DepthFrame) -> () + Send + 'static>(cb: F) -> Result<Self, NuiError> {
+        let callback_ptr = ClosureWapper::ptr(cb);
+        unsafe {
+            nui::register_depth_closure(Some(depth_handler), callback_ptr)
+                .to_result()
+                .map(|id| CallBack{callback_id: id.into(), callback_ptr, callback_type: CallBackType::Depth, _phantom: PhantomData} )
+        }
     }
-
 }
 
-impl Drop for CallBackSkeleton {
+impl CallBack<RGBFrame> {
+    pub fn new<F: FnMut(RGBFrame) -> () + Send + 'static>(cb: F) -> Result<Self, NuiError> {
+        let callback_ptr = ClosureWapper::ptr(cb);
+        unsafe {
+            nui::register_color_closure(Some(color_handler), callback_ptr)
+                .to_result()
+                .map(|id| CallBack{callback_id: id.into(), callback_ptr, callback_type: CallBackType::Color, _phantom: PhantomData} )
+        }
+    }
+}
+
+impl <T> Drop for CallBack<T> {
     fn drop(&mut self) {
-        let _cb: Box<ClosureWapper<SkeletonData>> = unsafe { Box::from_raw(self.callback_ptr as *mut ClosureWapper<SkeletonData>) };
-    }
-}
-
-impl Drop for CallBackDepth {
-    fn drop(&mut self) {
-        let _cb: Box<ClosureWapper<DepthFrame>> = unsafe { Box::from_raw(self.callback_ptr as *mut ClosureWapper<DepthFrame>) };
-    }
-}
-
-impl Drop for CallBackColor {
-    fn drop(&mut self) {
-        let _cb: Box<ClosureWapper<RGBFrame>> = unsafe { Box::from_raw(self.callback_ptr as *mut ClosureWapper<RGBFrame>) };
+        use self::CallBackType::*;
+        match self.callback_type {
+            Skeleton => {
+                let _cb: Box<ClosureWapper<SkeletonData>> = unsafe { Box::from_raw(self.callback_ptr as *mut ClosureWapper<SkeletonData>) };
+            },
+            Depth  => {
+                let _cb: Box<ClosureWapper<DepthFrame>> = unsafe { Box::from_raw(self.callback_ptr as *mut ClosureWapper<DepthFrame>) };
+            },
+            Color => {
+                let _cb: Box<ClosureWapper<RGBFrame>> = unsafe { Box::from_raw(self.callback_ptr as *mut ClosureWapper<RGBFrame>) };
+            },
+        }
     }
 }

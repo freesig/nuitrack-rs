@@ -7,6 +7,7 @@ namespace simple {
     };
     struct SkeletonData {
         Skeleton * skeletons; 
+        size_t len;
     };
     struct DepthFrame {
         int rows;

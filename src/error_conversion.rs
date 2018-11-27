@@ -1,5 +1,4 @@
 use super::nui_import::root::{Value, RustResult};
-use super::nui_import::root::simple::SkeletonData;
 use super::errors::NuiError;
 use std::ffi::CStr;
 use std::os::raw::c_char;
