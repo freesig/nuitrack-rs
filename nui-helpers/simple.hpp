@@ -3,6 +3,7 @@
 namespace simple {
     struct Skeleton{
         int id;
+        size_t num_joints;
         const tdv::nuitrack::Joint * joints;
     };
     struct SkeletonData {

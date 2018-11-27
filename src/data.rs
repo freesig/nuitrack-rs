@@ -1,11 +1,35 @@
-use nui::simple::SkeletonData;
+use nui::simple::{SkeletonData, Skeleton, DepthFrame, RGBFrame};
+use nui::tdv::nuitrack::{Joint, Color3};
+use std::slice;
 
-impl Iterator for SkeletonData {
-    type Item = SkeletonData;
+impl SkeletonData {
+    pub fn skeletons(&self) -> &[Skeleton] {
+        unsafe {
+            slice::from_raw_parts(self.skeletons, self.len)
+        }
+    }
+}
 
-    fn next(&mut self) -> Option<Self::Item> {
-        // Need to keep track of current pointer in the 
-        // pointers and move it along
-        unimplemented!()
+impl Skeleton {
+    pub fn joints(&self) -> &[Joint] {
+        unsafe {
+            slice::from_raw_parts(self.joints, self.num_joints)
+        }
+    }
+}
+
+impl DepthFrame {
+    pub fn frame(&self) -> &[u16] {
+        unsafe {
+            slice::from_raw_parts(self.data, (self.rows * self.cols) as usize)
+        }
+    }
+}
+
+impl RGBFrame {
+    pub fn frame(&self) -> &[Color3] {
+        unsafe {
+            slice::from_raw_parts(self.data, (self.rows * self.cols) as usize)
+        }
     }
 }

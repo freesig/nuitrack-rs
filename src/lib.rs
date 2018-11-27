@@ -8,10 +8,7 @@ use errors::NuiError;
 use error_conversion::NuiResult;
 use nui_import::root as nui;
 use nui::simple::{SkeletonData, DepthFrame, RGBFrame};
-use callbacks::CallBack;
-
-#[derive(Debug)]
-pub struct Unimplemented;
+pub use callbacks::CallBack;
 
 pub fn init() -> Result<(), NuiError> {
     unsafe{

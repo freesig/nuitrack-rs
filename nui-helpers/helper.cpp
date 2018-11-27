@@ -87,6 +87,7 @@ simple::SkeletonData to_simple(SkeletonData::Ptr sd) {
     for(const auto & skeleton : skeletons) {
         auto s_skeleton = simple::Skeleton{
             .id = skeleton.id,
+            .num_joints = skeleton.joints.size(),
             .joints = skeleton.joints.data()
         };
         s_skeletons.push_back(s_skeleton);
