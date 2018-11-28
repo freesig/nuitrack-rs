@@ -7,7 +7,8 @@ mod data;
 use errors::NuiError;
 use error_conversion::NuiResult;
 use nui_import::root as nui;
-use nui::simple::{SkeletonData, DepthFrame, RGBFrame};
+pub use nui::tdv::nuitrack::Color3;
+pub use nui::simple::{SkeletonData, DepthFrame, RGBFrame};
 pub use callbacks::CallBack;
 
 pub fn init() -> Result<(), NuiError> {

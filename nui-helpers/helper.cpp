@@ -61,6 +61,10 @@ extern "C" RustResult nui_update(){
     try {
         if (SKELETON_TRACKER.ptr != nullptr) {
             Nuitrack::waitUpdate(SKELETON_TRACKER.ptr);
+        } else if(DEPTH_SENSOR.ptr != nullptr) {
+            Nuitrack::waitUpdate(DEPTH_SENSOR.ptr);
+        } else if(COLOR_SENSOR.ptr != nullptr) {
+            Nuitrack::waitUpdate(COLOR_SENSOR.ptr);
         }
         return RustResult::make_ok();
     } catch (LicenseNotAcquiredException& e) {
@@ -81,7 +85,7 @@ extern "C" RustResult nui_release(){
     }
 }
 
-simple::SkeletonData to_simple(SkeletonData::Ptr sd) {
+std::vector<simple::Skeleton> to_simple(SkeletonData::Ptr sd) {
     const auto skeletons = sd->getSkeletons();
     std::vector<simple::Skeleton> s_skeletons;
     for(const auto & skeleton : skeletons) {
@@ -92,9 +96,7 @@ simple::SkeletonData to_simple(SkeletonData::Ptr sd) {
         };
         s_skeletons.push_back(s_skeleton);
     }
-    auto len = s_skeletons.size();
-    auto ret = simple::SkeletonData{.skeletons = s_skeletons.data(), .len = len };
-    return ret;
+    return s_skeletons;
 }
 
 simple::DepthFrame to_simple(DepthFrame::Ptr df) {
@@ -124,7 +126,9 @@ extern "C" RustResult register_skeleton_closure(void (*cb)(void *, simple::Skele
         create_skeleton_tracker();
         
         const auto wrapper = [=](const auto arg){ 
-            auto sd = to_simple(arg);
+            auto s_skeletons = to_simple(arg);
+            auto len = s_skeletons.size();
+            auto sd = simple::SkeletonData{.skeletons = s_skeletons.data(), .len = len };
             cb(user_data, sd);
         };
         auto id = SKELETON_TRACKER.ptr->connectOnUpdate(wrapper);

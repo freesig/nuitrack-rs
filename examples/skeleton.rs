@@ -8,6 +8,7 @@ fn main(){
 
     // Data Stream Setup
     let _cb = nui::skeleton_data(|data| {
+        println!("ptr: {:?}", data.skeletons);
         for skeleton in data.skeletons() {
             let joints = skeleton.joints();
             println!("skeletons {:?}", joints);
@@ -18,7 +19,7 @@ fn main(){
     let _cb2 = nui::depth_data(|data| {
         //println!("depth: {:?}", data.frame());
     }).expect("Failed to add callback");
-    
+
     // Data Stream Setup
     let _cb3 = nui::color_data(|data| {
         //println!("depth: {:?}", data.frame());
