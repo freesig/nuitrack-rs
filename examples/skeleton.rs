@@ -1,14 +1,14 @@
 extern crate nuitrack_rs;
 
-use nuitrack_rs as nui;
+use std::time::Instant;
 
 fn main(){
     // Initialized
-    nui::init().expect("Failed to initialize nui");
+    let mut nui = nuitrack_rs::init().expect("Failed to initialize nui");
 
     // Data Stream Setup
-    let _cb = nui::skeleton_data(|data| {
-        println!("ptr: {:?}", data.skeletons);
+    nui.skeleton_data(|data| {
+        //println!("ptr: {:?}", data.skeletons);
         for skeleton in data.skeletons() {
             let joints = skeleton.joints();
             println!("skeletons {:?}", joints);
@@ -16,22 +16,30 @@ fn main(){
     }).expect("Failed to add callback");
     
     // Data Stream Setup
-    let _cb2 = nui::depth_data(|data| {
+    nui.depth_data(|data| {
         //println!("depth: {:?}", data.frame());
     }).expect("Failed to add callback");
 
+    let mut last = Instant::now();
+    let mut count = 0;
     // Data Stream Setup
-    let _cb3 = nui::color_data(|data| {
+    nui.color_data(move |data| {
+        let now = Instant::now();
+        let dif = now.duration_since(last);
+        count += 1;
+        if dif.as_secs() > 0 {
+            last = now;
+            println!("FPS: {}", count);
+            count = 0;
+        }
         //println!("depth: {:?}", data.frame());
     }).expect("Failed to add callback");
 
     // Running
-    nui::run().expect("Failed to run nui");
+    let nui = nui.run().expect("Failed to run nui");
 
-    for _ in 0..10 {
-        nui::update().expect("Failed to update");
+    for _ in 0..100 {
+        nui.update().expect("Failed to update");
     }
 
-    // Offline
-    nui::release().expect("Failed to release nui");
 }

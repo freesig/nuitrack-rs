@@ -12,7 +12,7 @@ pub enum CallBackType {
 }
 
 pub struct CallBack<T> {
-    callback_id: CallBackId,
+    _callback_id: CallBackId,
     callback_ptr: *mut c_void,
     /// Gives drop the type to use
     callback_type: CallBackType,
@@ -63,7 +63,7 @@ impl CallBack<SkeletonData> {
         unsafe {
             nui::register_skeleton_closure(Some(skeleton_handler), callback_ptr)
                 .to_result()
-                .map(|id| CallBack{callback_id: id.into(), callback_ptr, callback_type: CallBackType::Skeleton, _phantom: PhantomData} )
+                .map(|id| CallBack{_callback_id: id.into(), callback_ptr, callback_type: CallBackType::Skeleton, _phantom: PhantomData} )
         }
     }
 }
@@ -74,7 +74,7 @@ impl CallBack<DepthFrame> {
         unsafe {
             nui::register_depth_closure(Some(depth_handler), callback_ptr)
                 .to_result()
-                .map(|id| CallBack{callback_id: id.into(), callback_ptr, callback_type: CallBackType::Depth, _phantom: PhantomData} )
+                .map(|id| CallBack{_callback_id: id.into(), callback_ptr, callback_type: CallBackType::Depth, _phantom: PhantomData} )
         }
     }
 }
@@ -85,7 +85,7 @@ impl CallBack<RGBFrame> {
         unsafe {
             nui::register_color_closure(Some(color_handler), callback_ptr)
                 .to_result()
-                .map(|id| CallBack{callback_id: id.into(), callback_ptr, callback_type: CallBackType::Color, _phantom: PhantomData} )
+                .map(|id| CallBack{_callback_id: id.into(), callback_ptr, callback_type: CallBackType::Color, _phantom: PhantomData} )
         }
     }
 }
