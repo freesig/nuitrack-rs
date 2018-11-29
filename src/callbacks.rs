@@ -3,6 +3,7 @@ use std::ffi::c_void;
 use errors::NuiError;
 use error_conversion::{NuiResult, CallBackId};
 use std::marker::PhantomData;
+use std::panic::{catch_unwind, UnwindSafe};
 
 pub enum CallBackType {
     Skeleton,
@@ -22,12 +23,24 @@ struct ClosureWapper<T> {
     cb: Box<FnMut(T)>,
 }
 
-extern "C" fn cb_handler<T>(closure: *mut c_void, n: T) {
+extern "C" fn cb_handler<T: UnwindSafe>(closure: *mut c_void, n: T) {
+    catch_unwind(|| safe_handle(closure, n))
+        .unwrap_or_else(|p| {
+            eprintln!("User callback has panicked with: {:?}", p);
+            unsafe {
+                nui::nui_release()
+                    .to_result()
+                    .map(|_| ())
+                    .unwrap_or_else(|e| eprintln!("Failed to release nui with: {}", e));
+            }
+        });
+}
+
+fn safe_handle<T: UnwindSafe>(closure: *mut c_void, n: T) {
     let wrapper = closure as *mut ClosureWapper<T>;
     unsafe{
         (*(*wrapper).cb)(n);
     }
-
 }
 
 // Needed because the FFI needs seperate function addresses to call
