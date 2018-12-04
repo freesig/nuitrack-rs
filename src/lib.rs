@@ -1,3 +1,42 @@
+//! This is a wrapper around the nuitrack SDK.
+//!
+//! It allows you to get skeleton tracking, RBG and
+//! depth data feeds.
+//!
+//! # Examples
+//! ```rust
+//! # use nuitrack_rs::{self, Nui, Initialized, Running};
+//! // Initialize nuitrack
+//! let mut nui: Nui<Initialized> = nuitrack_rs::init().expect("Failed to initialize nui");
+//! // Data Stream Setup
+//! nui.skeleton_data(|data| {
+//!     for skeleton in data.skeletons() {
+//!         let joints = skeleton.joints();
+//!         // Use joint data
+//!     }
+//! }).expect("Failed to add callback");
+//!
+//! // Data Stream Setup
+//! nui.depth_data(|data| {
+//!     let depth_frame = data.frame();
+//!     // Use depth data
+//! }).expect("Failed to add callback");
+//!
+//! // Data Stream Setup
+//! nui.color_data(move |data| {
+//!     let rgb_frame = data.frame();
+//!     // Use depth data
+//! }).expect("Failed to add callback");
+//!
+//! // Running
+//! let nui: Nui<Running> = nui.run().expect("Failed to run nui");
+//!
+//! // Get 100 updates from nui then quit
+//! // Clean up is done when nui drops
+//! for _ in 0..100 {
+//!     nui.update().expect("Failed to update");
+//! }
+//! ```
 mod nui_import;
 mod error_conversion;
 mod errors;
