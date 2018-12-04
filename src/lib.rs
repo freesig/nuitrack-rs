@@ -13,14 +13,18 @@ pub use nui::simple::{SkeletonData, DepthFrame, RGBFrame};
 pub use callbacks::CallBack;
 
 pub struct Nui<T> {
-    _state: T,
+    state: T,
     callbacks: Vec<CallBackHolder>,
 }
+
+unsafe impl<T> Send for Nui<T> {}
 
 pub struct State<T> {
     phantom: PhantomData<T>,
 }
-pub struct Initialized;
+pub struct Initialized {
+    clean_up: fn() -> (),
+}
 pub struct Running;
 pub struct Offline;
 
@@ -39,7 +43,7 @@ impl Nui<Offline> {
         unsafe{
             nui::nui_init()
                 .to_result()
-                .map(|_|Nui{_state: Initialized{}, callbacks: Vec::new()})
+                .map(|_|Nui{state: Initialized{clean_up: release_nui}, callbacks: Vec::new()})
         }
     }
 }
@@ -73,11 +77,13 @@ impl Nui<Initialized> {
                 .map(|cbw| self.callbacks.push(CallBackHolder::Color(cbw))) 
         }
 
-    pub fn run(self) -> Result<Nui<Running>, NuiError> {
+    pub fn run(mut self) -> Result<Nui<Running>, NuiError> {
         unsafe{
+            fn none(){};
+            self.state.clean_up = none;
             nui::nui_run()
                 .to_result()
-                .map(|_|Nui{_state: Running{}, callbacks: self.callbacks})
+                .map(|_|Nui{state: Running{}, callbacks: self.callbacks})
         }
     }
 }
@@ -92,11 +98,21 @@ impl Nui<Running> {
 
 impl Drop for Running {
     fn drop(&mut self) {
-        unsafe{
-            match nui::nui_release().to_result() {
-                Ok(_) => (),
-                Err(e) => eprintln!("Error releasing nuitrack: {}", e),
-            }
+        release_nui();
+    }
+}
+
+impl Drop for Initialized {
+    fn drop(&mut self) {
+        (self.clean_up)();
+    }
+}
+
+fn release_nui() {
+    unsafe{
+        match nui::nui_release().to_result() {
+            Ok(_) => (),
+            Err(e) => eprintln!("Error releasing nuitrack: {}", e),
         }
     }
 }
