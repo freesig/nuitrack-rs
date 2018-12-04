@@ -2,9 +2,6 @@
 
 {{readme}}
 
-# nuitrack-rs
-A Rust crate giving access to the Nuitrack SDK
-
 ## Installation Guide
 __Ubuntu 18.04__
 1. Download the SDK from the [Nuitrack website](https://nuitrack.com). 
