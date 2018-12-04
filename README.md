@@ -14,3 +14,7 @@ eg. `NUI_SDK_DIR = /home/user/nuitrack` _note not `/home/user/nuitrack/Nuitrack`
 5. Then you should be able to build your project with `cargo build --release`.
 To test try `cargo run --release --example skeleton` with a camera attached.
 _Please open an issue if you get stuck on any step_
+
+__Orbtec Astra__
+I've only tested this with the Orbec Astra. 
+To install the Orbtec SDK follow [these instructions.](https://astra-wiki.readthedocs.io/en/latest/installation.html)
