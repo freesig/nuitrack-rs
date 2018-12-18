@@ -37,11 +37,19 @@
 //!     nui.update().expect("Failed to update");
 //! }
 //! ```
+
+extern crate serde;
+extern crate serde_json;
+
+#[macro_use]
+extern crate serde_derive;
+
 mod nui_import;
 mod error_conversion;
 mod errors;
 mod callbacks;
 mod data;
+mod recorder;
 
 use errors::NuiError;
 use error_conversion::NuiResult;
@@ -50,6 +58,7 @@ use std::marker::PhantomData;
 pub use nui::tdv::nuitrack::Color3;
 pub use nui::simple::{SkeletonData, DepthFrame, RGBFrame};
 pub use callbacks::CallBack;
+pub use recorder::Recorder;
 
 pub struct Nui<T> {
     state: T,
@@ -75,6 +84,10 @@ enum CallBackHolder {
 
 pub fn init() -> Result<Nui<Initialized>, NuiError> {
     Nui::<Offline>::new()
+}
+
+pub fn record() -> Recorder {
+    Recorder::new()
 }
 
 impl Nui<Offline> {
