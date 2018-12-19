@@ -3,7 +3,10 @@
 //! It allows you to get skeleton tracking, RBG and
 //! depth data feeds.
 //!
+//! You can also record and playback these data feeds.
+//!
 //! # Examples
+//! ## Live
 //! ```rust
 //! # use nuitrack_rs::{self, Nui, Initialized, Running};
 //! // Initialize nuitrack
@@ -33,6 +36,96 @@
 //!
 //! // Get 100 updates from nui then quit
 //! // Clean up is done when nui drops
+//! for _ in 0..100 {
+//!     nui.update().expect("Failed to update");
+//! }
+//! ```
+//! ## Recording
+//! ```rust
+//! # use nuitrack_rs::{self, Nui, Initialized, Running};
+//! # let mut nui: Nui<Initialized> = nuitrack_rs::init().expect("Failed to initialize nui");
+//! // This is the same as above but with the following additions
+//!
+//! // Create a recorder
+//! let mut recorder = nuitrack_rs::record();
+//! 
+//! // Create a capture for skeleton data
+//! let skeleton_capture = recorder.new_capture();
+//!
+//! // Collect the skeleton data and make it owned.
+//! nui.skeleton_data(move |data| {
+//! let data = data.skeletons()
+//!         .iter()
+//!         .map(|s| s.make_owned())
+//!         .collect();
+//!     skeleton_capture.capture_skeleton(data);
+//! }).expect("Failed to add callback");
+//!
+//! // Create a capture for depth
+//! let depth_capture = recorder.new_capture();
+//!
+//! // Collect the depth data and make it an owned vec.
+//! nui.depth_data(move |data| {
+//!     depth_capture.capture_depth(data.frame().to_vec());
+//! }).expect("Failed to add callback");
+//!
+//! // Create a capture for color
+//! let color_capture = recorder.new_capture();
+//!
+//! // Collect the color data and make it an owned vec.
+//! nui.color_data(move |data| {
+//!     color_capture.capture_color(data.frame().to_vec());
+//! }).expect("Failed to add callback");
+//! # let nui: Nui<Running> = nui.run().expect("Failed to run nui");
+//! // Call write() after each frame.
+//! // Probably on a different thread.
+//! // This will collect data but only write to disk when a chunk of
+//! // data is collected
+//! recorder.write();
+//! // Call flush at the end incase there is some data that isn't wrtitten
+//! recorder.flush();
+//! ```
+//! ## Playback 
+//! ```rust
+//! // Playback is similar but there is a few differences.
+//! // No call to run and the types for Nui have changed.
+//! // The callbacks are identical to live though.
+//! # use nuitrack_rs::{self, Nui, Player};
+//! # use std::env;
+//! // Get the path to the recorded data.
+//! // By default it is in the current_dir().
+//! // Recording have the format recording-{timestamp}.snap
+//! let mut path = env::current_dir().expect("Couldn't find current directory");
+//! path.push("recording-1545179088.snap");
+//! 
+//! // Create the nui player.
+//! // The second parameter is whether or not to loop the playback.
+//! // Looping is good if the recording is short.
+//! let mut nui: Nui<Player> = nuitrack_rs::playback(path, false).expect("Couldn't create player");
+//!
+//! // All the callbacks are identical to live.
+//! nui.skeleton_data(|data| {
+//!     for skeleton in data.skeletons() {
+//!         let joints = skeleton.joints();
+//!         // Use joint data
+//!     }
+//! }).expect("Failed to add callback");
+//!
+//! // Data Stream Setup
+//! nui.depth_data(|data| {
+//!     let depth_frame = data.frame();
+//!     // Use depth data
+//! }).expect("Failed to add callback");
+//!
+//! // Data Stream Setup
+//! nui.color_data(move |data| {
+//!     let rgb_frame = data.frame();
+//!     // Use depth data
+//! }).expect("Failed to add callback");
+//!
+//! // No call to run
+//!
+//! // Update is the same as live
 //! for _ in 0..100 {
 //!     nui.update().expect("Failed to update");
 //! }

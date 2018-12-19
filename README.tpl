@@ -19,3 +19,11 @@ _Please open an issue if you get stuck on any step_
 __Orbtec Astra__
 I've only tested this with the Orbec Astra. 
 To install the Orbtec SDK follow [these instructions.](https://astra-wiki.readthedocs.io/en/latest/installation.html)
+
+__Recording / Playback__
+These features are useful if you need to test when you don't
+have access to a camera all the time.
+You can record some data from the camera and then play it back
+at a later time.
+The playback API is very close to the live API. The callbacks are
+identical. See the examples for usage.
