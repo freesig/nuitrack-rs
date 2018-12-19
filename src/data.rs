@@ -3,7 +3,7 @@ use nui::tdv::nuitrack::{Joint, Color3, Vector3, Orientation};
 use nui_import::root;
 use std::slice;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct SkeletonFeed {
     id: i32,
     #[serde(with = "joint_vec")]
@@ -143,4 +143,42 @@ pub mod color3_vec {
             let colors = Vec::<W>::deserialize(deserializer)?;
             Ok(colors.into_iter().map(|n| n.0).collect())
         }
+}
+
+impl From<&mut Vec<Skeleton>> for SkeletonData {
+    fn from(item: &mut Vec<Skeleton>) -> Self {
+        let len = item.len();
+        let skeletons = item.as_mut_ptr();
+        SkeletonData{ len, skeletons }
+    }
+}
+
+pub fn feed_to_ptr(item: &Vec<SkeletonFeed>) -> Vec<Skeleton> {
+    item.into_iter()
+        .map(|sf| {
+            Skeleton{
+                id: sf.id,
+                num_joints: sf.joints.len(),
+                joints: sf.joints.as_ptr(),
+            }
+        })
+    .collect()
+}
+
+impl From<&mut Vec<u16>> for DepthFrame {
+    fn from(item: &mut Vec<u16>) -> Self {
+        let rows = 640;
+        let cols = 480;
+        let data = item.as_ptr();
+        DepthFrame{rows, cols, id: 0, data, time_stamp: 0}
+    }
+}
+
+impl From<&mut Vec<Color3>> for RGBFrame {
+    fn from(item: &mut Vec<Color3>) -> Self {
+        let rows = 640;
+        let cols = 480;
+        let data = item.as_ptr();
+        RGBFrame{rows, cols, id: 0, data, time_stamp: 0}
+    }
 }

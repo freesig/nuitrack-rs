@@ -41,7 +41,7 @@ fn main(){
         recorder.flush();
     });
 
-    for _ in 0..1 {
+    for _ in 0..5 {
         nui.update().expect("Failed to update");
     }
     control_tx.send(()).expect("Failed to signal recorder thread");

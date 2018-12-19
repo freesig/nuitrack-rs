@@ -4,6 +4,7 @@ use std::fs::File;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use data::{SkeletonFeed, color3_vec};
 use nui::tdv::nuitrack::Color3;
+use snap;
 
 const BUFFER_SIZE: usize = 50;
 
@@ -23,19 +24,19 @@ enum DataMsg {
     Color(Vec<Color3>),
 }
 
-#[derive(Serialize, Deserialize)]
-struct TimePoint {
-    skeleton: Vec<SkeletonFeed>,
-    depth: Vec<u16>,
+#[derive(Serialize, Deserialize, Clone)]
+pub struct TimePoint {
+    pub skeleton: Vec<SkeletonFeed>,
+    pub depth: Vec<u16>,
     #[serde(with = "color3_vec")]
-    color: Vec<Color3>,
+    pub color: Vec<Color3>,
 }
 
 impl Recorder {
     pub fn new() -> Self {
         let mut path = env::current_dir().expect("Could find current directory");
         let now = SystemTime::now().duration_since(UNIX_EPOCH).expect("failed to get time").as_secs();
-        path.push(format!("recording-{}.json", now));
+        path.push(format!("recording-{}.snap", now));
         let file = File::create(path).expect("failed to create file");
         Recorder{ 
             captures: Vec::new(),
@@ -53,7 +54,8 @@ impl Recorder {
     pub fn write(&mut self) {
         if self.data.len() > BUFFER_SIZE {
             for d in self.data.iter() {
-                serde_json::to_writer(&self.file, d).expect("failed to write to file");
+                let mut snappy = snap::Writer::new(&self.file);
+                serde_json::to_writer(snappy, d).expect("failed to write to file");
             }
             self.data.clear();
         }
@@ -78,7 +80,8 @@ impl Recorder {
 
     pub fn flush(&mut self) {
         for d in self.data.iter() {
-            serde_json::to_writer(&self.file, d).expect("failed to write to file");
+            let mut snappy = snap::Writer::new(&self.file);
+            serde_json::to_writer(snappy, d).expect("failed to write to file");
         }
         self.data.clear();
     }

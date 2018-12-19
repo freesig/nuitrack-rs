@@ -44,21 +44,26 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
+extern crate snap;
+
 mod nui_import;
 mod error_conversion;
 mod errors;
 mod callbacks;
 mod data;
 mod recorder;
+mod player;
 
 use errors::NuiError;
 use error_conversion::NuiResult;
 use nui_import::root as nui;
 use std::marker::PhantomData;
+use std::path::PathBuf;  
+use player::Content;
 pub use nui::tdv::nuitrack::Color3;
-pub use nui::simple::{SkeletonData, DepthFrame, RGBFrame};
+pub use nui::simple::{SkeletonData, DepthFrame, RGBFrame, Skeleton};
 pub use callbacks::CallBack;
-pub use recorder::Recorder;
+pub use recorder::{Recorder, TimePoint};
 
 pub struct Nui<T> {
     state: T,
@@ -75,11 +80,17 @@ pub struct Initialized {
 }
 pub struct Running;
 pub struct Offline;
+pub struct Player {
+    content: Content,
+}
 
 enum CallBackHolder {
     Skeleton(CallBack<SkeletonData>),
     Depth(CallBack<DepthFrame>),
     Color(CallBack<RGBFrame>),
+    PSkeleton(Box<FnMut(SkeletonData) -> () + Send + 'static>),
+    PDepth(Box<FnMut(DepthFrame) -> () + Send + 'static>),
+    PColor(Box<FnMut(RGBFrame) -> () + Send + 'static>),
 }
 
 pub fn init() -> Result<Nui<Initialized>, NuiError> {
@@ -90,6 +101,10 @@ pub fn record() -> Recorder {
     Recorder::new()
 }
 
+pub fn playback(path: PathBuf, loop_player: bool) -> Result<Nui<Player>, NuiError> {
+    Nui::<Player>::new(path, loop_player)
+}
+
 impl Nui<Offline> {
     pub fn new() -> Result<Nui<Initialized>, NuiError> {
         unsafe{
@@ -97,6 +112,61 @@ impl Nui<Offline> {
                 .to_result()
                 .map(|_|Nui{state: Initialized{clean_up: release_nui}, callbacks: Vec::new()})
         }
+    }
+}
+
+impl Nui<Player> {
+    pub fn new(path: PathBuf, loop_player: bool) -> Result<Nui<Player>, NuiError> {
+        let content = player::read_in(path, loop_player);
+        Ok(Nui{state: Player{content}, callbacks: Vec::new()})
+    }
+    
+    pub fn skeleton_data<F>(&mut self, cb: F)
+        -> Result<(), NuiError>
+        where
+        F: FnMut(SkeletonData) -> () + Send + 'static
+        {
+            self.callbacks.push(CallBackHolder::PSkeleton(Box::new(cb)));
+            Ok(())
+
+        }
+
+    pub fn depth_data<F>(&mut self, cb: F)
+        -> Result<(), NuiError>
+        where
+        F: FnMut(DepthFrame) -> () + Send + 'static
+        {
+            self.callbacks.push(CallBackHolder::PDepth(Box::new(cb)));
+            Ok(())
+        }
+
+    pub fn color_data<F>(&mut self, cb: F)
+        -> Result<(), NuiError>
+        where
+        F: FnMut(RGBFrame) -> () + Send + 'static
+        {
+            self.callbacks.push(CallBackHolder::PColor(Box::new(cb)));
+            Ok(())
+        }
+    
+    pub fn update(&mut self) -> Result<(), NuiError> {
+        if let Some(content) = self.state.content.next() {
+            let TimePoint {
+                skeleton,
+                mut depth,
+                mut color,
+            } = content;
+            let mut skeletons: Vec<Skeleton> = data::feed_to_ptr(&skeleton);
+            for cb in self.callbacks.iter_mut() {
+                match cb {
+                    CallBackHolder::PSkeleton(cb) => (*cb)((&mut skeletons).into()),
+                    CallBackHolder::PDepth(cb) => (*cb)((&mut depth).into()),
+                    CallBackHolder::PColor(cb) => (*cb)((&mut color).into()),
+                    _ => eprintln!("Wrong type of playback callback"),
+                }
+            }
+        }
+        Ok(())
     }
 }
 
