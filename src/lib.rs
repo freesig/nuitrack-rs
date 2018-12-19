@@ -248,13 +248,15 @@ impl Nui<Player> {
                 skeleton,
                 mut depth,
                 mut color,
+                rows,
+                cols,
             } = content;
             let mut skeletons: Vec<Skeleton> = data::feed_to_ptr(&skeleton);
             for cb in self.callbacks.iter_mut() {
                 match cb {
                     CallBackHolder::PSkeleton(cb) => (*cb)((&mut skeletons).into()),
-                    CallBackHolder::PDepth(cb) => (*cb)((&mut depth).into()),
-                    CallBackHolder::PColor(cb) => (*cb)((&mut color).into()),
+                    CallBackHolder::PDepth(cb) => (*cb)((&mut depth, rows, cols).into()),
+                    CallBackHolder::PColor(cb) => (*cb)((&mut color, rows, cols).into()),
                     _ => eprintln!("Wrong type of playback callback"),
                 }
             }

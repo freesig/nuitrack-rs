@@ -22,11 +22,14 @@ enum DataMsg {
     Skeleton(Vec<SkeletonFeed>),
     Depth(Vec<u16>),
     Color(Vec<Color3>),
+    Size((i32, i32)),
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct TimePoint {
     pub skeleton: Vec<SkeletonFeed>,
+    pub rows: i32,
+    pub cols: i32,
     pub depth: Vec<u16>,
     #[serde(with = "color3_vec")]
     pub color: Vec<Color3>,
@@ -62,19 +65,24 @@ impl Recorder {
         let mut sk_data = None;
         let mut d_data = None;
         let mut c_data = None;
+        let mut size = None;
         for c in self.captures.iter() {
             let msg = c.recv().expect("failed to recv capture");
             match msg {
                 DataMsg::Skeleton(s) => sk_data = Some(s),
                 DataMsg::Depth(d) => d_data = Some(d),
                 DataMsg::Color(c) => c_data = Some(c),
+                DataMsg::Size(s) => size = Some(s),
             }
         }
+        let (rows, cols) = size.expect("did not receive size capture");
         self.data.push(
             TimePoint {
-                skeleton: sk_data.expect("did recieve skeleton capture"),
-                depth: d_data.expect("did recieve skeleton capture"),
-                color: c_data.expect("did recieve skeleton capture"),
+                skeleton: sk_data.expect("did not receive skeleton capture"),
+                depth: d_data.expect("did not receive depth capture"),
+                color: c_data.expect("did not receive color capture"),
+                rows,
+                cols,
             });
     }
 
@@ -98,5 +106,9 @@ impl Capture {
     
     pub fn capture_color(&self, data: Vec<Color3>) {
         self.tx.send(DataMsg::Color(data)).expect("Failed to send color data");
+    }
+
+    pub fn capture_size(&self, data: (i32, i32)) {
+        self.tx.send(DataMsg::Size(data)).expect("Failed to send color data");
     }
 }

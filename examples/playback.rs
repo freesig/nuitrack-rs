@@ -5,7 +5,7 @@ use std::env;
 fn main(){
     // Initialized
     let mut path = env::current_dir().expect("Couldn't find current directory");
-    path.push("recording-1545179088.snap");
+    path.push("recording-1545192362.snap");
 
     let mut nui = nuitrack_rs::playback(path, false).expect("Couldn't create player");
 

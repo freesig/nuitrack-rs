@@ -23,8 +23,10 @@ fn main(){
     }).expect("Failed to add callback");
 
     let color_capture = recorder.new_capture();
+    let size_capture = recorder.new_capture();
     // Data Stream Setup
     nui.color_data(move |data| {
+        size_capture.capture_size((data.rows, data.cols));
         color_capture.capture_color(data.frame().to_vec());
     }).expect("Failed to add callback");
 

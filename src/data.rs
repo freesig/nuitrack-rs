@@ -165,20 +165,20 @@ pub fn feed_to_ptr(item: &Vec<SkeletonFeed>) -> Vec<Skeleton> {
     .collect()
 }
 
-impl From<&mut Vec<u16>> for DepthFrame {
-    fn from(item: &mut Vec<u16>) -> Self {
-        let rows = 640;
-        let cols = 480;
-        let data = item.as_ptr();
+impl From<(&mut Vec<u16>, i32, i32)> for DepthFrame {
+    fn from(item: (&mut Vec<u16>, i32, i32)) -> Self {
+        let rows = item.1;
+        let cols = item.2;
+        let data = item.0.as_ptr();
         DepthFrame{rows, cols, id: 0, data, time_stamp: 0}
     }
 }
 
-impl From<&mut Vec<Color3>> for RGBFrame {
-    fn from(item: &mut Vec<Color3>) -> Self {
-        let rows = 640;
-        let cols = 480;
-        let data = item.as_ptr();
+impl From<(&mut Vec<Color3>, i32, i32)> for RGBFrame {
+    fn from(item: (&mut Vec<Color3>, i32, i32)) -> Self {
+        let rows = item.1;
+        let cols = item.2;
+        let data = item.0.as_ptr();
         RGBFrame{rows, cols, id: 0, data, time_stamp: 0}
     }
 }
