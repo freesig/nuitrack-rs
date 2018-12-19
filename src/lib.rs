@@ -72,8 +72,13 @@
 //! // Create a capture for color
 //! let color_capture = recorder.new_capture();
 //!
+//! // Create rows and cols capture
+//! let size_capture = recorder.new_capture();
+//!
 //! // Collect the color data and make it an owned vec.
+//! // Collect the frame size
 //! nui.color_data(move |data| {
+//!     size_capture.capture_size((data.rows, data.cols));
 //!     color_capture.capture_color(data.frame().to_vec());
 //! }).expect("Failed to add callback");
 //! # let nui: Nui<Running> = nui.run().expect("Failed to run nui");
