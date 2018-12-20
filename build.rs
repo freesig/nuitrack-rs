@@ -5,11 +5,6 @@ use std::env;
 use std::path::PathBuf;
 
 const NUI_SDK_DIR: &'static str = "NUI_SDK_DIR";
-/*
-const NUI_INCLUDE_PATH: &'static str = "/home/tom/devbox/nuitrack/Nuitrack/include";
-const NUI_MIDDLE_INCLUDE_PATH: &'static str =
-    "/home/tom/devbox/nuitrack/Nuitrack/include/middleware";
-*/
 
 fn main() {
     if cfg!(not(target_os="linux")) { panic!("Only linux os is supported"); }
@@ -69,6 +64,7 @@ fn main() {
             .enable_cxx_namespaces()
             .whitelist_type("RustResult")
             .whitelist_function("nui_init")
+            .whitelist_function("nui_set_rotation")
             .whitelist_function("nui_run")
             .whitelist_function("nui_update")
             .whitelist_function("nui_release")

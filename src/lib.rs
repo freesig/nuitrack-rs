@@ -299,6 +299,16 @@ impl Nui<Initialized> {
                 .map(|cbw| self.callbacks.push(CallBackHolder::Color(cbw))) 
         }
 
+    /// Sets the cameras rotation in degrees.
+    /// Call after init() and before run()
+    pub fn set_camera_rotation(&self, rotation: i32) -> Result<(), NuiError> {
+        unsafe {
+            nui::nui_set_rotation(rotation)
+                .to_result()
+                .map(|_|())
+        }
+    }
+
     pub fn run(mut self) -> Result<Nui<Running>, NuiError> {
         unsafe{
             fn none(){};

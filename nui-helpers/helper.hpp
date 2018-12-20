@@ -56,6 +56,7 @@ struct RustResult {
 };
 
 extern "C" RustResult nui_init();
+extern "C" RustResult nui_set_rotation(int);
 extern "C" RustResult nui_run();
 extern "C" RustResult nui_update();
 extern "C" RustResult nui_release();

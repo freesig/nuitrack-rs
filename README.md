@@ -157,3 +157,10 @@ You can record some data from the camera and then play it back
 at a later time.
 The playback API is very close to the live API. The callbacks are
 identical. See the examples for usage.
+
+__Rotation__
+You can set the camera's rotation by calling:
+```rust
+// In degrees. Call after init() and before run.
+nui.set_camera_rotation(90);
+```

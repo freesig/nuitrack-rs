@@ -44,6 +44,16 @@ extern "C" RustResult nui_init(){
     }
 }
 
+extern "C" RustResult nui_set_rotation(int rotation){
+    string r = std::to_string(rotation);
+    try {
+        Nuitrack::setConfigValue("DepthProvider.RotateAngle", r);
+        return RustResult::make_ok();
+    } catch (const Exception& e) {
+        return RustResult::make_err(e.what());
+    }
+}
+
 extern "C" RustResult nui_run(){
     try {
         Nuitrack::run();
