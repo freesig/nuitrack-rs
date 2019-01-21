@@ -144,23 +144,25 @@ extern crate serde_derive;
 
 extern crate snap;
 
-mod nui_import;
-mod error_conversion;
-mod errors;
 mod callbacks;
 mod data;
-mod recorder;
+mod error_conversion;
+mod errors;
+mod joint_type;
+mod nui_import;
 mod player;
+mod recorder;
 
 use errors::NuiError;
 use error_conversion::NuiResult;
 use nui_import::root as nui;
 use std::marker::PhantomData;
-use std::path::PathBuf;  
+use std::path::PathBuf;
 use player::Content;
 pub use nui::tdv::nuitrack::{Color3, Joint, Orientation};
 pub use nui::simple::{SkeletonData, DepthFrame, RGBFrame, Skeleton};
 pub use callbacks::CallBack;
+pub use joint_type::JointType;
 pub use recorder::{Recorder, TimePoint};
 
 pub struct Nui<T> {
