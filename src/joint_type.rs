@@ -1,3 +1,19 @@
+pub const SKELETON_BONES: &'static [(JointType, JointType)] = &[
+    (JointType::Head, JointType::Neck),
+    (JointType::Neck, JointType::Torso),
+    (JointType::LeftShoulder, JointType::RightShoulder),
+    (JointType::Waist, JointType::LeftHip),
+    (JointType::Waist, JointType::RightHip),
+    (JointType::Torso, JointType::Waist),
+    (JointType::LeftShoulder, JointType::LeftElbow),
+    (JointType::LeftElbow, JointType::LeftWrist),
+    (JointType::LeftHip, JointType::LeftKnee),
+    (JointType::LeftKnee, JointType::LeftAnkle),
+    (JointType::RightShoulder, JointType::RightElbow),
+    (JointType::RightElbow, JointType::RightWrist),
+    (JointType::RightHip, JointType::RightKnee),
+    (JointType::RightKnee, JointType::RightAnkle),
+];
 
 /// A readable form of the joint type.
 ///
