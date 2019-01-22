@@ -159,7 +159,7 @@ use nui_import::root as nui;
 use std::marker::PhantomData;
 use std::path::PathBuf;
 use player::Content;
-pub use nui::tdv::nuitrack::{Color3, Joint, Orientation};
+pub use nui::tdv::nuitrack::{Color3, Joint, Orientation, Vector3};
 pub use nui::simple::{SkeletonData, DepthFrame, RGBFrame, Skeleton};
 pub use callbacks::CallBack;
 pub use joint_type::{JointType, SKELETON_BONES};
