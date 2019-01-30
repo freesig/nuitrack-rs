@@ -5,9 +5,9 @@ use std::slice;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct SkeletonFeed {
-    id: i32,
+    pub id: i32,
     #[serde(with = "joint_vec")]
-    joints: Vec<Joint>,
+    pub joints: Vec<Joint>,
 }
 
 impl SkeletonData {

@@ -16,6 +16,7 @@ snap = "0.2"
 
 [dev-dependencies]
 nannou = { git = "https://github.com/nannou-org/nannou", branch = "v0.9" }
+vulkano = { git = "https://github.com/mitchmindtree/vulkano", branch = "nannou_patches" }
 
 [replace]
 "vulkano:0.11.1" = { git = "https://github.com/mitchmindtree/vulkano", branch = "nannou_patches" }

@@ -164,6 +164,7 @@ pub use nui::simple::{SkeletonData, DepthFrame, RGBFrame, Skeleton};
 pub use callbacks::CallBack;
 pub use joint_type::{JointType, SKELETON_BONES};
 pub use recorder::{Recorder, TimePoint};
+pub use self::data::{SkeletonFeed, feed_to_ptr};
 
 pub struct Nui<T> {
     state: T,

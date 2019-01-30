@@ -33,6 +33,7 @@ pub fn read_in(path: PathBuf, loop_player: bool) -> Content {
         .into_iter::<TimePoint>()
         .map(Result::unwrap)
         .collect();
+
     let data = if loop_player {
         Play::Loop(content.into_iter().cycle())
     } else {
