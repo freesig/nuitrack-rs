@@ -63,3 +63,4 @@ extern "C" RustResult nui_release();
 extern "C" RustResult register_skeleton_closure(void (*cb)(void *, simple::SkeletonData), void *);
 extern "C" RustResult register_depth_closure(void (*cb)(void *, simple::DepthFrame), void *);
 extern "C" RustResult register_color_closure(void (*cb)(void *, simple::RGBFrame), void *);
+extern "C" RustResult register_user_closure(void (*cb)(void *, simple::UserFrame), void *);

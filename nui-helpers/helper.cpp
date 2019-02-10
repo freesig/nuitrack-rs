@@ -11,6 +11,7 @@ using namespace tdv::nuitrack;
 static SmartPtr<SkeletonTracker> SKELETON_TRACKER;
 static SmartPtr<DepthSensor> DEPTH_SENSOR;
 static SmartPtr<ColorSensor> COLOR_SENSOR;
+static SmartPtr<UserTracker> USER_TRACKER;
 
 void create_skeleton_tracker() {
     std::lock_guard<std::mutex> lock(SKELETON_TRACKER.lock);
@@ -30,6 +31,13 @@ void create_color_sensor() {
     std::lock_guard<std::mutex> lock(COLOR_SENSOR.lock);
     if (COLOR_SENSOR.ptr == nullptr) {
         COLOR_SENSOR.ptr = ColorSensor::create();
+    } 
+}
+
+void create_user_tracker() {
+    std::lock_guard<std::mutex> lock(USER_TRACKER.lock);
+    if (USER_TRACKER.ptr == nullptr) {
+        USER_TRACKER.ptr = UserTracker::create();
     } 
 }
 
@@ -75,6 +83,8 @@ extern "C" RustResult nui_update(){
             Nuitrack::waitUpdate(DEPTH_SENSOR.ptr);
         } else if(COLOR_SENSOR.ptr != nullptr) {
             Nuitrack::waitUpdate(COLOR_SENSOR.ptr);
+        } else if(USER_TRACKER.ptr != nullptr) {
+            Nuitrack::waitUpdate(USER_TRACKER.ptr);
         }
         return RustResult::make_ok();
     } catch (LicenseNotAcquiredException& e) {
@@ -172,6 +182,33 @@ extern "C" RustResult register_color_closure(void (*cb)(void *, simple::RGBFrame
             cb(user_data, sd);
         };
         auto id = COLOR_SENSOR.ptr->connectOnNewFrame(wrapper);
+        return RustResult::make_ok(id);
+    } catch (const Exception& e) {
+        return RustResult::make_err(e.what());
+    }
+}
+
+extern "C" RustResult register_user_closure(void (*cb)(void *, simple::UserFrame), void * user_data) {
+    try {
+        create_user_tracker();
+        
+        const auto wrapper = [=](const auto arg){ 
+            auto users = arg->getUsers();
+            auto len = users.size();
+            auto uf = simple::UserFrame{
+                .num_users = len,
+                    .users = users.data(),
+                    .rows = arg->getRows(),
+                    .cols = arg->getCols(),
+                    .id = arg->getID(),
+                    .data = arg->getData(),
+                    .time_stamp = arg->getTimestamp(),
+                    .floor = arg->getFloor(),
+                    .floor_normal = arg->getFloorNormal()
+            };
+            cb(user_data, uf);
+        };
+        auto id = USER_TRACKER.ptr->connectOnUpdate(wrapper);
         return RustResult::make_ok(id);
     } catch (const Exception& e) {
         return RustResult::make_err(e.what());

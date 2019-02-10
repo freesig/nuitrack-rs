@@ -153,14 +153,14 @@ mod nui_import;
 mod player;
 mod recorder;
 
-use errors::NuiError;
 use error_conversion::NuiResult;
 use nui_import::root as nui;
 use std::marker::PhantomData;
 use std::path::PathBuf;
 use player::Content;
-pub use nui::tdv::nuitrack::{Color3, Joint, Orientation, Vector3};
-pub use nui::simple::{SkeletonData, DepthFrame, RGBFrame, Skeleton};
+pub use errors::NuiError;
+pub use nui::tdv::nuitrack::{Color3, Joint, Orientation, Vector3, BoundingBox, User};
+pub use nui::simple::{SkeletonData, DepthFrame, RGBFrame, Skeleton, UserFrame};
 pub use callbacks::CallBack;
 pub use joint_type::{JointType, SKELETON_BONES};
 pub use recorder::{Recorder, TimePoint};
@@ -189,6 +189,7 @@ enum CallBackHolder {
     Skeleton(CallBack<SkeletonData>),
     Depth(CallBack<DepthFrame>),
     Color(CallBack<RGBFrame>),
+    User(CallBack<UserFrame>),
     PSkeleton(Box<FnMut(SkeletonData) -> () + Send + 'static>),
     PDepth(Box<FnMut(DepthFrame) -> () + Send + 'static>),
     PColor(Box<FnMut(RGBFrame) -> () + Send + 'static>),
@@ -268,8 +269,10 @@ impl Nui<Player> {
                     _ => eprintln!("Wrong type of playback callback"),
                 }
             }
+            Ok(())
+        } else { 
+            Err(NuiError::PlayBackEnd)
         }
-        Ok(())
     }
 }
 
@@ -300,6 +303,16 @@ impl Nui<Initialized> {
         {
             CallBack::<RGBFrame>::new(cb)
                 .map(|cbw| self.callbacks.push(CallBackHolder::Color(cbw))) 
+        }
+
+    pub fn user_data<F>(&mut self, cb: F)
+        -> Result<(), NuiError>
+        where
+        F: FnMut(UserFrame) -> () + Send + 'static
+        {
+            CallBack::<UserFrame>::new(cb)
+                .map(|cbw| self.callbacks.push(CallBackHolder::User(cbw)))
+
         }
 
     /// Sets the cameras rotation in degrees.
