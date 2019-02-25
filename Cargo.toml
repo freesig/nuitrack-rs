@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["tom"]
 build = "build.rs"
 
-[build-dependencies]
+[target.'cfg(linux)'.build-dependencies]
 bindgen = "0.43.1"
 cc = "1.0.25"
 

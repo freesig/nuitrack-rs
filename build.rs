@@ -1,13 +1,26 @@
+#[cfg(target_os = "linux")]
 extern crate bindgen;
+#[cfg(target_os = "linux")]
 extern crate cc;
 
+
+#[cfg(target_os = "linux")]
 use std::env;
+
+#[cfg(target_os = "linux")]
 use std::path::PathBuf;
 
+
+#[cfg(target_os = "linux")]
 const NUI_SDK_DIR: &'static str = "NUI_SDK_DIR";
 
 fn main() {
-    if cfg!(not(target_os="linux")) { panic!("Only linux os is supported"); }
+    #[cfg(target_os = "linux")]
+    build_for_linux();
+}
+
+#[cfg(target_os = "linux")]
+fn build_for_linux() {
     let mut nui_sdk_dir = match env::var(NUI_SDK_DIR) {
         Ok(dir) => dir,
         Err(env::VarError::NotPresent) => panic!("Please set the NUI_SDK_DIR environment variable 
