@@ -84,6 +84,7 @@ fn build_for_linux() {
             .whitelist_function("register_skeleton_closure")
             .whitelist_function("register_depth_closure")
             .whitelist_function("register_color_closure")
+            .whitelist_function("register_user_closure")
             .generate()
             .expect("Unable to generate bindings");
         let out_path = PathBuf::from(env::var("OUT_DIR").expect("bad path"));

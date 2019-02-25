@@ -1,5 +1,5 @@
-use nui::simple::{SkeletonData, Skeleton, DepthFrame, RGBFrame};
-use nui::tdv::nuitrack::{Joint, Color3, Vector3, Orientation};
+use nui::simple::{SkeletonData, Skeleton, DepthFrame, RGBFrame, UserFrame};
+use nui::tdv::nuitrack::{Joint, Color3, Vector3, Orientation, User};
 use nui_import::root;
 use std::slice;
 
@@ -43,6 +43,20 @@ impl DepthFrame {
 
 impl RGBFrame {
     pub fn frame(&self) -> &[Color3] {
+        unsafe {
+            slice::from_raw_parts(self.data, (self.rows * self.cols) as usize)
+        }
+    }
+}
+
+impl UserFrame {
+    pub fn users(&self) -> &[User] {
+        unsafe {
+            slice::from_raw_parts(self.users, self.num_users)
+        }
+    }
+
+    pub fn frame(&self) -> &[u16] {
         unsafe {
             slice::from_raw_parts(self.data, (self.rows * self.cols) as usize)
         }
