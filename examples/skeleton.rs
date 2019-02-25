@@ -16,6 +16,15 @@ fn main(){
     }).expect("Failed to add callback");
     
     // Data Stream Setup
+    nui.user_data(|data| {
+        println!("User Frame: {:?}", data);
+        for user in data.users() {
+            println!("User {:?}", user);
+        }
+        println!("frame: {:?}", data.frame());
+    }).expect("Failed to add callback");
+
+    // Data Stream Setup
     nui.depth_data(|data| {
         //println!("depth: {:?}", data.frame());
     }).expect("Failed to add callback");

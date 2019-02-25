@@ -1,4 +1,4 @@
-use super::nui::{self, simple::SkeletonData, simple::DepthFrame, simple::RGBFrame};
+use super::nui::{self, simple::SkeletonData, simple::DepthFrame, simple::RGBFrame, simple::UserFrame};
 use std::ffi::c_void;
 use errors::NuiError;
 use error_conversion::{NuiResult, CallBackId};
@@ -9,6 +9,7 @@ pub enum CallBackType {
     Skeleton,
     Depth,
     Color,
+    User,
 }
 
 pub struct CallBack<T> {
@@ -47,6 +48,7 @@ fn safe_handle<T: UnwindSafe>(closure: *mut c_void, n: T) {
 extern "C" fn skeleton_handler(closure: *mut c_void, n: SkeletonData) { cb_handler(closure, n) }
 extern "C" fn depth_handler(closure: *mut c_void, n: DepthFrame) { cb_handler(closure, n) }
 extern "C" fn color_handler(closure: *mut c_void, n: RGBFrame) { cb_handler(closure, n) }
+extern "C" fn user_handler(closure: *mut c_void, n: UserFrame) { cb_handler(closure, n) }
 
 impl<T> ClosureWapper<T> {
     fn ptr<F: FnMut(T) -> () + Send + 'static>(cb: F) -> *mut c_void {
@@ -90,6 +92,17 @@ impl CallBack<RGBFrame> {
     }
 }
 
+impl CallBack<UserFrame> {
+    pub fn new<F: FnMut(UserFrame) -> () + Send + 'static>(cb: F) -> Result<Self, NuiError> {
+        let callback_ptr = ClosureWapper::ptr(cb);
+        unsafe {
+            nui::register_user_closure(Some(user_handler), callback_ptr)
+                .to_result()
+                .map(|id| CallBack{_callback_id: id.into(), callback_ptr, callback_type: CallBackType::User, _phantom: PhantomData} )
+        }
+    }
+}
+
 impl <T> Drop for CallBack<T> {
     fn drop(&mut self) {
         use self::CallBackType::*;
@@ -102,6 +115,9 @@ impl <T> Drop for CallBack<T> {
             },
             Color => {
                 let _cb: Box<ClosureWapper<RGBFrame>> = unsafe { Box::from_raw(self.callback_ptr as *mut ClosureWapper<RGBFrame>) };
+            },
+            User => {
+                let _cb: Box<ClosureWapper<UserFrame>> = unsafe { Box::from_raw(self.callback_ptr as *mut ClosureWapper<UserFrame>) };
             },
         }
     }

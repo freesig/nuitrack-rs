@@ -25,5 +25,27 @@ namespace simple {
         const tdv::nuitrack::Color3 * data;
         uint64_t time_stamp;
     };
+
+    /*
+    struct User {
+        int id;
+        tdv::nuitrack::Vector3 proj;
+        tdv::nuitrack::Vector3 real;
+        tdv::nuitrack::BoundingBox box;
+        float occlusion;
+    };
+    */
+
+    struct UserFrame {
+        size_t num_users;
+        tdv::nuitrack::User * users;
+        int rows;
+        int cols;
+        uint64_t id;
+        const uint16_t * data;
+        uint64_t time_stamp;
+        tdv::nuitrack::Vector3 floor;
+        tdv::nuitrack::Vector3 floor_normal;
+    };
 };
 
